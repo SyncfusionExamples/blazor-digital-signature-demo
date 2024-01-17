@@ -1,0 +1,31 @@
+﻿@page "/"
+
+@using DGSignature.Data
+@inject PdfDigitalSignatureService pdfDigitalSignatureService
+@inject Microsoft.JSInterop.IJSRuntime JS
+@using System.IO
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.PdfViewerServer
+
+<h2 style="float:left">Digital Signature Blazor Demo</h2>
+
+<SfButton OnClick="@OnCompleteSignClick" CssClass="right-align">Complete Signing</SfButton>
+
+<SfPdfViewerServer DocumentPath="@DocumentPath" ID="pdfviewer" Height="850px" Width="100%" @ref="pdfViewer">
+</SfPdfViewerServer>
+
+@code{
+    private string DocumentPath { get; set; } = "wwwroot/input-data/RentalAgreement.pdf";
+    private SfPdfViewerServer pdfViewer;
+
+    private async void OnCompleteSignClick(MouseEventArgs args)
+    {
+        byte[] documentContent = await pdfViewer.GetDocumentAsync();
+        using (MemoryStream memoryStream = pdfDigitalSignatureService.AddDigitalSignature(documentContent))
+        {
+            string file = "SignedPdf.pdf";
+            // await JS.InvokeAsync<object>("saveAsFile", file, memoryStream.ToArray());
+            await JS.SaveAs("SignedPdf.pdf", memoryStream.ToArray());
+        }
+    }
+}
